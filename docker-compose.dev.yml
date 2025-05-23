@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: postgres_estoque_produtos
+    ports:
+      - "5435:5432"
+    environment:
+      - POSTGRES_DB=estoque_produtos
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      # - estoque_produtos_data:/var/lib/postgresql/data
+      - ./src/main/resources/database/dumps:/docker-entrypoint-initdb.d
+
+# volumes:
+#   estoque_produtos_data:
