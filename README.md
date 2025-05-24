@@ -83,7 +83,7 @@ No terminal (ou pela IDE):
 
 ```bash
 ./mvnw clean package
-java -jar ./target/supermercado-api-0.0.1-SNAPSHOT.jar
+java -jar .target/estoque_produtos-0.0.1-SNAPSHOT.jar
 ```
 
 ### ✅ Status atual
