@@ -13,10 +13,12 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "tb_categorias")
 @AllArgsConstructor
+@NoArgsConstructor
 @Getter
 public class Categorias {
 
