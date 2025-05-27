@@ -18,9 +18,11 @@ public class ProdutoRequest {
   @Size(min = 3, max = 100)
   private String nome;
   
+  @Nonnull
   @Min(0)
   private BigDecimal preco;
   
+  @Nonnull
   @Min(0)
   private Integer quantidade;
 
