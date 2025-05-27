@@ -88,6 +88,7 @@ java -jar .target/estoque_produtos-0.0.1-SNAPSHOT.jar
 
 ### ✅ Status atual
 - [x] Projeto inicial com Spring Boot configurado
+- [x] Endpoints entidade Categoria finalizado 
 - [ ] Entidade Produto implementada com validações
 - [ ] Regras de negócio aplicadas
 - [ ] CRUD completo de Produtos e Categorias
