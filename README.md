@@ -72,26 +72,41 @@ A API possui documentação interativa disponível via Swagger:
 
 ### ▶️ Como executar o projeto
 
-#### 1. Subir o PostgreSQL com Docker
+#### 1. Clonar o repositório
+```bash
+git clone https://github.com/chiarelli/estoqueProdutos.git
+cd estoqueProdutos
+```
+
+#### 2. Subir o PostgreSQL com Docker
 
 ```bash
 docker-compose -f docker-compose.dev.yml up -d
 ```
 
-#### 2. Executar a aplicação
+#### 3. Executar os testes (opcional)
+Lembrando que o container precisa estar `ready` para realizar os testes.
+```bash
+./mvnw test
+```
+
+#### 4. Executar a aplicação
 No terminal (ou pela IDE):
 
 ```bash
-./mvnw clean package
-java -jar .target/estoque_produtos-0.0.1-SNAPSHOT.jar
+./mvnw spring-boot:run
 ```
 
 ### ✅ Status atual
 - [x] Projeto inicial com Spring Boot configurado
-- [x] Endpoints entidade Categoria finalizado 
-- [ ] Entidade Produto implementada com validações
-- [ ] Regras de negócio aplicadas
-- [ ] CRUD completo de Produtos e Categorias
-- [ ] Documentação Swagger
-- [ ] Tratamento de exceções e mensagens amigáveis
-- [ ] Testes automatizados (unitários e integração)
+- [x] Endpoints listagem da entidade Categoria finalizado 
+- [x] Entidade Produto implementada com validações
+- [x] Regras de negócio aplicadas
+- [x] CRUD completo de Produtos
+- [x] Documentação Swagger
+- [x] Tratamento de exceções e mensagens amigáveis
+- [x] Testes automatizados (API)
+
+---
+###### 👨‍💻 Autor
+> Feito por Raphael Mathias Chiarelli Gomes durante o curso de Spring Boot Web Developer na [COTI](https://www.cotiinformatica.com.br/curso/java).
