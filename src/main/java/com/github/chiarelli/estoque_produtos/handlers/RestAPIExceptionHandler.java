@@ -23,7 +23,19 @@ public class RestAPIExceptionHandler {
 
   @ExceptionHandler(UIException.class)
   public ResponseEntity<Map<String, Object>> handleUIException(UIException ex) {
-    return new ResponseEntity<>(ex.getMessages(), HttpStatus.BAD_REQUEST);
+    return new ResponseEntity<>(ex.getUserMessages(), HttpStatus.BAD_REQUEST);
+  }
+
+  @ExceptionHandler(Throwable.class)
+  public ResponseEntity<?> handleThrowable(Throwable ex) {
+    // Logue para investigação (log completo no back-end)
+    ex.printStackTrace();
+
+    return ResponseEntity
+      .status(HttpStatus.INTERNAL_SERVER_ERROR)
+      .body(Map.of(
+        "error", "Erro interno no servidor. Tente novamente mais tarde."
+      ));
   }
 
 }
