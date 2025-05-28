@@ -27,29 +27,86 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("api/v1/produtos")
+@Tag(name = "Produtos", description = "Cria, atualiza e exclui um produto, bem como recupera produtos cadastrados.")
 public class ProdutosController {
 
   @Autowired ProdutoUsercase pUsercase;
 
   @PostMapping
+  @Operation(
+    summary = "Criar um produto", 
+    description = "Cria um produto com os dados fornecidos.",
+    responses = {
+      @ApiResponse(
+        responseCode = "201", 
+        description = "Produto criado com sucesso"
+      ),
+      @ApiResponse(
+        responseCode = "400", 
+        description = "Erro se tentar criar produto com uma categoria inexistente ou com nome semelhante a outro já cadastrado"
+      )
+    }
+  )
   public ResponseEntity<ProdutoResponse> register(@RequestBody @Valid CriarProdutoRequest produto) throws Exception {
     var resp = pUsercase.registrarProduto(produto);
     return ResponseEntity.status(HttpStatus.CREATED).body(resp);
   }
 
   @GetMapping
+  @Operation(
+    summary = "Retornar todos os produtos", 
+    description = "Retorna todos os produtos cadastrados.",
+    responses = {
+      @ApiResponse(
+        responseCode = "200", 
+        description = "Produtos encontrados"
+      )
+    }
+  )
   public List<ProdutoResponse> getAll() {
     var resp = pUsercase.listarProdutos();
     return resp;
   }
 
   @GetMapping("{id}")
+  @Operation(
+    summary = "Retornar um produto", 
+    description = "Retorna um produto pelo seu uuid.",
+    responses = {
+      @ApiResponse(
+        responseCode = "200", 
+        description = "Produto encontrado"
+      ),
+      @ApiResponse(
+        responseCode = "404", 
+        description = "Produto nao encontrado"
+      )
+    }
+  )
   public ProdutoResponse getById(@PathVariable UUID id) {
     var resp = pUsercase.retornarPorId(id);
     return resp;
   }
   
   @PutMapping("{id}")
+  @Operation(
+    summary = "Atualizar um produto", 
+    description = "Atualiza um produto pelo seu uuid.",
+    responses = {
+      @ApiResponse(
+        responseCode = "200", 
+        description = "Produto atualizado"
+      ),
+      @ApiResponse(
+        responseCode = "404", 
+        description = "Produto nao encontrado"
+      ),
+      @ApiResponse(
+        responseCode = "400", 
+        description = "Erro se tentar atualizar produto com uma categoria inexistente ou com nome semelhante a outro já cadastrado"
+      )
+    }
+  )
   public ProdutoResponse update(@PathVariable UUID id, @RequestBody @Valid ProdutoRequest request) {
     var resp = pUsercase.atualizarProduto(id, request);
     return resp;
