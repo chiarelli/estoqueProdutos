@@ -1,6 +1,7 @@
 package com.github.chiarelli.estoque_produtos.entities;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -53,6 +54,12 @@ public class Produtos {
   @Column(name = "quantidade", nullable = false)
   @Min(0)
   private Integer quantidade;
+
+  @Column(name = "created_at", nullable = false)
+  private Date createdAt;
+  
+  @Column(name = "updated_at", nullable = false)
+  private Date updatedAt;
   
   @ManyToOne
   @JoinColumn(name = "categoria_id", nullable = false)
@@ -60,6 +67,24 @@ public class Produtos {
 
   @Transient
   final Slugify slg = Slugify.builder().build();
+
+  public Produtos(
+    UUID id, 
+    @Size(min = 3, max = 100) String nome, 
+    @Min(0) BigDecimal preco, 
+    @Min(0) Integer quantidade, 
+    Date createdAt,
+    Date updatedAt,
+    Categorias categoria
+  ) {
+    this.id = id;
+    setNome(nome);
+    this.preco = preco;
+    this.quantidade = quantidade;
+    this.createdAt = createdAt;
+    this.updatedAt = updatedAt;
+    this.categoria = categoria;
+  }
 
   public Produtos(
     UUID id, 
@@ -77,7 +102,7 @@ public class Produtos {
 
   public void setNome(@Size(min = 3, max = 100) String nome) {
     this.nome = nome;
-    gerarSlug();
+    generateSlug();
   }
 
   public void setPreco(@Min(0) BigDecimal preco) {
@@ -95,11 +120,32 @@ public class Produtos {
   }
 
   @PrePersist
+  void OnCreate() {
+    generateSlug();  
+    defineCreatedAt();
+    defineUpdatedAt();
+  }
+  
   @PreUpdate
-  public void gerarSlug() {
+  void OnUpdate() {
+    generateSlug(); 
+    defineUpdatedAt();
+  }
+
+  private void generateSlug() {
     if (nome != null) {
       this.nomeSlug = slg.slugify(nome).replace("-", "");
     }
+  }
+
+  private void defineCreatedAt() {
+    if (Objects.isNull(createdAt)) {
+      this.createdAt = new Date();
+    }
+  }
+
+  private void defineUpdatedAt() {
+    this.updatedAt = new Date();
   }
 
 }
