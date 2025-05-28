@@ -1,6 +1,7 @@
 package com.github.chiarelli.estoque_produtos.usercases;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import com.github.chiarelli.estoque_produtos.entities.Categorias;
 import com.github.chiarelli.estoque_produtos.entities.Produtos;
+import com.github.chiarelli.estoque_produtos.exceptions.NotFoundException;
 import com.github.chiarelli.estoque_produtos.exceptions.UIException;
 import com.github.chiarelli.estoque_produtos.pojos.CriarProdutoRequest;
 import com.github.chiarelli.estoque_produtos.pojos.ProdutoResponse;
@@ -83,6 +85,21 @@ public class ProdutoUsercase {
     return ProdutoResponse.fromEntity(entity);
   }
 
+  public List<ProdutoResponse> listarProdutos() {
+    var produtos = repository.findAll();
+
+    return produtos.stream()
+      .map(produto -> ProdutoResponse.fromEntity(produto))
+      .toList();
+  }
+  
+  public ProdutoResponse retornarPorId(UUID id) {
+    var produto = repository.findById(id);
+    if (produto.isEmpty()) {
+      throw new NotFoundException("produto id " + id.toString() + " not exists.");
+    }
+    return ProdutoResponse.fromEntity(produto.get());
+  }
   public void excluirProduto(UUID id) {
     throw new UnsupportedOperationException("Not yet implemented method excluirProduto");
   }
