@@ -9,6 +9,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import com.github.chiarelli.estoque_produtos.exceptions.NotFoundException;
 import com.github.chiarelli.estoque_produtos.exceptions.UIException;
 
 @ControllerAdvice
@@ -19,6 +20,11 @@ public class RestAPIExceptionHandler {
     Map<String, String> erros = new HashMap<>();
     ex.getBindingResult().getFieldErrors().forEach(error -> erros.put(error.getField(), error.getDefaultMessage()));
     return new ResponseEntity<>(erros, HttpStatus.BAD_REQUEST);
+  }
+
+  @ExceptionHandler(NotFoundException.class)
+  public ResponseEntity<Map<String, Object>> handleUIException(NotFoundException ex) {
+    return new ResponseEntity<>(ex.getUserMessages(), HttpStatus.NOT_FOUND);
   }
 
   @ExceptionHandler(UIException.class)
