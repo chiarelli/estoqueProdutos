@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -277,7 +278,41 @@ public class ProdutosIntegrationTests {
   }
 
   @Test
-  void tentarExcluirProdutoComEstoque() {
-    // TODO falta implementar
+  void excluirProduto() throws Exception {
+    // prepare
+    produtosRepository.deleteAll();
+
+    // Excluir um produto com que não existe
+    mockMvc.perform(delete("/api/v1/produtos/{id}", UUID.randomUUID().toString()))
+        .andExpect(status().isNoContent());
+
+    // Criar produto com estoque maior que zero
+    var request1 = new CriarProdutoRequest("Produto para ser excluido", BigDecimal.valueOf(41.99), 90,
+        UUID.fromString(CAT_DEFAULT_ID));
+
+    var result1 = mockMvc.perform(post("/api/v1/produtos")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(mapper.writeValueAsString(request1)))
+        .andExpect(status().isCreated())
+        .andReturn();
+
+    var content = result1.getResponse().getContentAsString();
+    var product1 = mapper.readValue(content, ProdutoResponse.class);
+
+    // Excluir produto com estoque maior que zero
+    mockMvc.perform(delete("/api/v1/produtos/{id}", product1.getId().toString()))
+        .andExpect(status().isBadRequest());
+
+    // Atualizar produto com estoque igual a zero
+    var request2 = new ProdutoRequest(product1.getNome(), product1.getPreco(), 0, product1.getCategoria().getId());
+
+    mockMvc.perform(put("/api/v1/produtos/{id}", product1.getId().toString())
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(mapper.writeValueAsString(request2)))
+        .andExpect(status().isOk());
+
+    // Excluir produto com estoque igual a zero
+    mockMvc.perform(delete("/api/v1/produtos/{id}", product1.getId().toString()))
+        .andExpect(status().isNoContent());
   }
 }

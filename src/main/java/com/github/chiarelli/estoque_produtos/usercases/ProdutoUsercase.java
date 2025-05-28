@@ -104,9 +104,33 @@ public class ProdutoUsercase {
     return ProdutoResponse.fromEntity(produto.get());
   }
   public void excluirProduto(UUID id) {
-    throw new UnsupportedOperationException("Not yet implemented method excluirProduto");
+    var produto = repository.findById(id);
+    if (produto.isEmpty()) {
+      return; // Se o produto nao existir, nao faz nada
+    }
+
+    if(produto.get().getQuantidade() > 0) {
+      Map<String, Object> userMessages = new LinkedHashMap<>();
+        userMessages.put("erro", "Produto com quantidade maior que zero não pode ser excluído");
+        userMessages.put("quantidade", "Quantidade atual: " + produto.get().getQuantidade());
+      throw new UIException(userMessages);
+    }
+
+    repository.delete(produto.get());
   }
 
+  /**
+   * Updates a product with a given id, using the provided request.
+   * 
+   * @param id      the id of the product to be updated
+   * @param produto the request with the new product data
+   * @return a response with the updated product data
+   * 
+   * @throws UIException if the category does not exist
+   * @throws DataIntegrityViolationException if a database integrity violation
+   *                                         occurs during the save operation
+   * @throws NotFoundException if the product id does not exist
+   */
   public ProdutoResponse atualizarProduto(UUID id, ProdutoRequest produto) {
     Optional<Categorias> opCat = catRepository.findById(produto.getCategoria_id());
     if (opCat.isEmpty()) {
@@ -142,7 +166,7 @@ public class ProdutoUsercase {
    * @param entity the {@link Produtos} entity to be validated
    * @throws UIException if validation errors are present
    */
-   void validateEntity(Produtos entity) {
+   public void validateEntity(Produtos entity) {
     Set<ConstraintViolation<Produtos>> violations = validator.validate(entity);
 
     if (violations.isEmpty()) {

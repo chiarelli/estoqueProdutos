@@ -20,6 +20,9 @@ import com.github.chiarelli.estoque_produtos.pojos.ProdutoRequest;
 import com.github.chiarelli.estoque_produtos.pojos.ProdutoResponse;
 import com.github.chiarelli.estoque_produtos.usercases.ProdutoUsercase;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 @RestController
@@ -53,8 +56,23 @@ public class ProdutosController {
   }
 
   @DeleteMapping("{id}")
-  public void delete(@PathVariable UUID id) {
-    throw new UnsupportedOperationException("Not yet implemented method delete");
+  @Operation(
+    summary = "Excluir um produto", 
+    description = "Exclui um produto pelo seu uuid.",
+    responses = {
+      @ApiResponse(
+        responseCode = "204", 
+        description = "Produto excluído"
+      ),
+      @ApiResponse(
+        responseCode = "400", 
+        description = "Erro se tentar excluir produto com quantidade maior que zero"
+      )
+    }
+  )
+  public ResponseEntity<Void> delete(@PathVariable UUID id) {
+    pUsercase.excluirProduto(id);
+    return ResponseEntity.noContent().build();
   }
 
 }
