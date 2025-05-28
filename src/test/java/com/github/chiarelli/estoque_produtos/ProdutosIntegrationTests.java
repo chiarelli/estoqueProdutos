@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.math.BigDecimal;
@@ -19,12 +20,15 @@ import org.springframework.test.web.servlet.MockMvc;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.chiarelli.estoque_produtos.pojos.CriarProdutoRequest;
+import com.github.chiarelli.estoque_produtos.pojos.ProdutoRequest;
 import com.github.chiarelli.estoque_produtos.pojos.ProdutoResponse;
 import com.github.chiarelli.estoque_produtos.repositories.ProdutosRepository;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 public class ProdutosIntegrationTests {
+
+  private static final String CAT_DEFAULT_ID = "022b570e-bf1b-4d90-b18a-4d75dfe291d1";
 
   @Autowired MockMvc mockMvc;
   @Autowired ObjectMapper mapper;
@@ -76,7 +80,7 @@ public class ProdutosIntegrationTests {
 
     // Stage 1
     var request1 = new CriarProdutoRequest("Meu primeiro produto", BigDecimal.valueOf(70.89), 52,
-        UUID.fromString("022b570e-bf1b-4d90-b18a-4d75dfe291d1"));
+        UUID.fromString(CAT_DEFAULT_ID));
 
     mockMvc.perform(post("/api/v1/produtos")
         .contentType(MediaType.APPLICATION_JSON)
@@ -99,7 +103,7 @@ public class ProdutosIntegrationTests {
         });
 
     var request3 = new CriarProdutoRequest("Meuprimeiroproduto", BigDecimal.valueOf(85.55), 10,
-        UUID.fromString("022b570e-bf1b-4d90-b18a-4d75dfe291d1"));
+        UUID.fromString(CAT_DEFAULT_ID));
 
     mockMvc.perform(post("/api/v1/produtos")
         .contentType(MediaType.APPLICATION_JSON)
@@ -114,7 +118,7 @@ public class ProdutosIntegrationTests {
         });
 
     var request4 = new CriarProdutoRequest("Meu primeiro produto", BigDecimal.valueOf(70.89), 52,
-        UUID.fromString("022b570e-bf1b-4d90-b18a-4d75dfe291d1"));
+        UUID.fromString(CAT_DEFAULT_ID));
 
     mockMvc.perform(post("/api/v1/produtos")
         .contentType(MediaType.APPLICATION_JSON)
@@ -131,14 +135,14 @@ public class ProdutosIntegrationTests {
     // Stage 2
     // Prepare
     var request5 = new CriarProdutoRequest("Produto da moça", BigDecimal.valueOf(85.55), 52,
-        UUID.fromString("022b570e-bf1b-4d90-b18a-4d75dfe291d1"));
+        UUID.fromString(CAT_DEFAULT_ID));
 
     mockMvc.perform(post("/api/v1/produtos")
         .contentType(MediaType.APPLICATION_JSON)
         .content(mapper.writeValueAsString(request5))).andExpect(status().isCreated());
 
     var request6 = new CriarProdutoRequest("pROdutO Da  moca ", BigDecimal.valueOf(85.55), 52,
-        UUID.fromString("022b570e-bf1b-4d90-b18a-4d75dfe291d1"));
+        UUID.fromString(CAT_DEFAULT_ID));
 
     mockMvc.perform(post("/api/v1/produtos")
         .contentType(MediaType.APPLICATION_JSON)
@@ -163,7 +167,7 @@ public class ProdutosIntegrationTests {
     UUID productInvalidId = UUID.randomUUID();
 
     var request1 = new CriarProdutoRequest("Meu primeiro produto", BigDecimal.valueOf(70.89), 10,
-        UUID.fromString("022b570e-bf1b-4d90-b18a-4d75dfe291d1"));
+        UUID.fromString(CAT_DEFAULT_ID));
 
     var result1 = mockMvc.perform(post("/api/v1/produtos")
         .contentType(MediaType.APPLICATION_JSON)
@@ -175,7 +179,7 @@ public class ProdutosIntegrationTests {
     produto1 = mapper.readValue(content, ProdutoResponse.class);
         
     var request2 = new CriarProdutoRequest("Produto da moça", BigDecimal.valueOf(85.55), 52,
-        UUID.fromString("022b570e-bf1b-4d90-b18a-4d75dfe291d1"));
+        UUID.fromString(CAT_DEFAULT_ID));
 
     var result2 = mockMvc.perform(post("/api/v1/produtos")
         .contentType(MediaType.APPLICATION_JSON)
@@ -215,6 +219,61 @@ public class ProdutosIntegrationTests {
 
     mockMvc.perform(get("/api/v1/produtos/{id}", productInvalidId.toString()))
       .andExpect(status().isNotFound());
+  }
+
+  @Test
+  void atualizarProduto() throws JsonProcessingException, Exception {
+    // prepare
+    produtosRepository.deleteAll();
+
+    var request1 = new CriarProdutoRequest("Produto para ser atualizado", BigDecimal.valueOf(41.99), 90,
+        UUID.fromString(CAT_DEFAULT_ID));
+
+    var result1 = mockMvc.perform(post("/api/v1/produtos")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(mapper.writeValueAsString(request1)))
+        .andExpect(status().isCreated())
+        .andReturn();
+
+    var content = result1.getResponse().getContentAsString();
+    var product1 = mapper.readValue(content, ProdutoResponse.class);
+
+    // Act
+    // Atualizar produto com nome, preco e quantidade invalidos
+    var request2 = new ProdutoRequest("Produto para ser atualizado", BigDecimal.valueOf(-41.99), -90, UUID.fromString(CAT_DEFAULT_ID));
+
+    mockMvc.perform(put("/api/v1/produtos/{id}", product1.getId().toString())
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(mapper.writeValueAsString(request2)))
+        .andExpect(status().isBadRequest());
+
+    // Atualizar produto com uma categoria inexistente
+    var catInvalidId = UUID.randomUUID();
+    var request3 = new ProdutoRequest("Produto para ser atualizado", BigDecimal.valueOf(41.99), 90, catInvalidId);
+
+    mockMvc.perform(put("/api/v1/produtos/{id}", product1.getId().toString())
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(mapper.writeValueAsString(request3)))
+        .andExpect(status().isBadRequest());
+
+    // Atualizar produto com valores validos
+    var request4 = new ProdutoRequest("Produto para ser atualizado", BigDecimal.valueOf(0), 0, UUID.fromString("ab882be1-c518-4227-bca8-d5126b361b6a"));
+
+    var result4 = mockMvc.perform(put("/api/v1/produtos/{id}", product1.getId().toString())
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(mapper.writeValueAsString(request4)))
+        .andExpect(status().isOk())
+        .andReturn();
+
+    var content4 = result4.getResponse().getContentAsString();
+    var product4 = mapper.readValue(content4, ProdutoResponse.class);
+
+    assertEquals(product4.getPreco(), BigDecimal.valueOf(0));
+    assertEquals(product4.getPreco(), BigDecimal.valueOf(0));
+    assertEquals(product4.getCategoria().getId(), UUID.fromString("ab882be1-c518-4227-bca8-d5126b361b6a"));
+    assertEquals(product4.getNome(), "Produto para ser atualizado");
+    assertTrue(product4.getUpdatedAt().after(product1.getUpdatedAt()));
+
   }
 
   @Test

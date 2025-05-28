@@ -16,6 +16,7 @@ import com.github.chiarelli.estoque_produtos.entities.Produtos;
 import com.github.chiarelli.estoque_produtos.exceptions.NotFoundException;
 import com.github.chiarelli.estoque_produtos.exceptions.UIException;
 import com.github.chiarelli.estoque_produtos.pojos.CriarProdutoRequest;
+import com.github.chiarelli.estoque_produtos.pojos.ProdutoRequest;
 import com.github.chiarelli.estoque_produtos.pojos.ProdutoResponse;
 import com.github.chiarelli.estoque_produtos.repositories.CategoriasRepository;
 import com.github.chiarelli.estoque_produtos.repositories.ProdutosRepository;
@@ -67,7 +68,7 @@ public class ProdutoUsercase {
 
     try {
       // Salva a entidade no banco
-      repository.save(entity);
+      entity = repository.save(entity);
 
     } catch (DataIntegrityViolationException ex) {
       // Caso o nome do produto esteja duplicado, isso é verificado quando message do erro contém
@@ -81,6 +82,8 @@ public class ProdutoUsercase {
       // Caso seja outro erro, lança a exception
       throw ex;
     }
+
+    
 
     return ProdutoResponse.fromEntity(entity);
   }
@@ -104,8 +107,27 @@ public class ProdutoUsercase {
     throw new UnsupportedOperationException("Not yet implemented method excluirProduto");
   }
 
-  public void atualizarProduto(UUID id, CriarProdutoRequest produto) {
-    throw new UnsupportedOperationException("Not yet implemented method atualizarProduto");
+  public ProdutoResponse atualizarProduto(UUID id, ProdutoRequest produto) {
+    Optional<Categorias> opCat = catRepository.findById(produto.getCategoria_id());
+    if (opCat.isEmpty()) {
+      // Categoria nao encontrada, lança uma exception
+      throw new UIException("categoria id " + produto.getCategoria_id().toString() + " not exists.");
+    }
+
+    var opcional = repository.findById(id);
+    if (opcional.isEmpty()) {
+      throw new NotFoundException("produto id " + id.toString() + " not exists.");
+    }
+    var entity = opcional.get();
+      entity.setNome(produto.getNome());
+      entity.setPreco(produto.getPreco());
+      entity.setQuantidade(produto.getQuantidade());
+      entity.setCategoria(opCat.get());
+
+    validateEntity(entity);
+
+    entity = repository.save(entity);
+    return ProdutoResponse.fromEntity(entity);
   }  
   
   /**
